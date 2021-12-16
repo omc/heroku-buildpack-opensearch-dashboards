@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "opensearch-dashboards"
+exit 0

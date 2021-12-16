@@ -1,0 +1,144 @@
+#!/bin/bash
+
+indent() {
+  sed -u 's/^/       /'
+}
+
+function major_version() {
+  echo "$OPENSEARCH_VERSION" | cut -d . -f 1
+}
+
+function minor_version() {
+  echo "$OPENSEARCH_VERSION" | cut -d . -f 2
+}
+
+function is_version_above() {
+  major=$1
+  minor=$2
+  if [[ ( "$(major_version)" -ge "${major}" && "$(minor_version)" -ge "${minor}" ) || "$(major_version)" -gt "${major}" ]]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+function download_url() {
+  echo "https://artifacts.opensearch.org/releases/bundle/opensearch-dashboards/${OPENSEARCH_VERSION}/opensearch-dashboards-${OPENSEARCH_VERSION}-linux-x64.tar.gz"
+}
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+INIT_SCRIPT="$BUILD_DIR/.profile.d/opensearch-dashboards.sh"
+
+# If the user supplied a URL and the URL is not empty, use it
+if [ -f "$ENV_DIR/OPENSEARCH_URL" ] && [ ! -z "$ENV_DIR/OPENSEARCH_URL" ]; then
+  OPENSEARCH_URL="$(cat "$ENV_DIR/OPENSEARCH_URL")"
+
+# If the user DID NOT supply a URL, or the URL they supplied is empty,
+# use BONSAI_URL if it is available
+elif [ -f "$ENV_DIR/BONSAI_URL" ]; then
+  OPENSEARCH_URL="$(cat "$ENV_DIR/BONSAI_URL")"
+
+# Default to localhost for lack of anything else?
+else
+  OPENSEARCH_URL="http://localhost:9200"
+fi
+
+# Check for overridden OpenSearch version (For private clusters, etc)
+if [ -f "$ENV_DIR/OPENSEARCH_VERSION" ]; then
+  OPENSEARCH_VERSION=$(cat "$ENV_DIR/OPENSEARCH_VERSION")
+else
+  echo "-----> Hitting OpenSearch URL to detect version..."
+  # Query the OpenSearch URL and extract the version
+  DETAILS=$(curl --connect-timeout 5 -s $OPENSEARCH_URL)
+  if [ $? -ne 0 ]; then
+    echo "Unable to access $OPENSEARCH_URL, cannot install OpenSearch Dashboards"
+    exit 1
+  fi
+  # Extract the version
+  OPENSEARCH_VERSION=$(echo "$DETAILS" | grep -m1 -oP '"number"\s*:\s*"\K[^"]+')
+fi
+
+# Compose a URL to fetch OpenSearch Dashboards
+DOWNLOAD_URL=$(download_url)
+
+OSD_PACKAGE=${DOWNLOAD_URL##*/}
+case ${OSD_PACKAGE} in
+  *.tar.gz)
+    ;;
+  *)
+    echo "Only tar.gz is supported: $OSD_PACKAGE" | indent
+    exit 1
+    ;;
+esac
+OSD_DIR="$BUILD_DIR/opensearch-dashboards-${OPENSEARCH_VERSION}-linux-x64"
+
+echo "-----> Installing OpenSearch Dashboards ${OSD_PACKAGE}..."
+
+mkdir -p "${INIT_SCRIPT%/*}"
+mkdir -p "$CACHE_DIR"
+
+if [ ! -f "$CACHE_DIR/$OSD_PACKAGE" ]; then
+
+  echo "Downloading $OSD_PACKAGE from $DOWNLOAD_URL" | indent
+  curl -sLO "$DOWNLOAD_URL"
+
+  if [ $? -ne 0 ]; then
+    echo "Unable to fetch $DOWNLOAD_URL, cannot install OpenSearch Dashboards"
+    exit 1
+  fi
+
+  # echo "Verifying against ${DOWNLOAD_URL}.sha1" | indent
+  # curl -sLO "${DOWNLOAD_URL}.sha1"
+  # echo "$(cat ${OSD_PACKAGE}.sha1) *${OSD_PACKAGE}" > ${OSD_PACKAGE}.sha1
+  # echo "Contents of the SHA1: " | indent
+  # cat ${OSD_PACKAGE}.sha1
+
+  # sha1sum --check --warn "${OSD_PACKAGE}.sha1"
+
+  if [ $? -eq 0 ]; then
+    mv "$OSD_PACKAGE" "$CACHE_DIR"
+  else
+    exit 1
+  fi
+fi
+
+echo "-----> Extracting OpenSearch Dashboards ${OSD_PACKAGE}..."
+echo "tar xz -C '$BUILD_DIR' --wildcards -f '$CACHE_DIR/$OSD_PACKAGE'"
+tar xz -C "$BUILD_DIR" -f "$CACHE_DIR/$OSD_PACKAGE"
+
+echo "-----> Configuring OpenSearch Dashboards @ ${OSD_DIR}..."
+
+# Check for username/password
+if [ ! -z "$(echo $OPENSEARCH_URL | egrep '://[a-zA-Z0-9]{1,}:[a-zA-Z0-9]{1,}@')" ]; then
+  UNAME="$(echo $OPENSEARCH_URL | egrep '://[a-zA-Z0-9]{1,}:[a-zA-Z0-9]{1,}@' | sed -E 's/.*:\/\/([a-zA-Z0-9]{1,}):([a-zA-Z0-9]{1,}).*/\1/')"
+  PWORD="$(echo $OPENSEARCH_URL | egrep '://[a-zA-Z0-9]{1,}:[a-zA-Z0-9]{1,}@' | sed -E 's/.*:\/\/([a-zA-Z0-9]{1,}):([a-zA-Z0-9]{1,}).*/\2/')"
+fi
+
+# Build up the config file
+OSD_CONF="${CACHE_DIR}/opensearch_dashboards.yml"
+
+# Heroku doesn't like the default of localhost
+echo "server.host: 0.0.0.0" > "$OSD_CONF"
+
+echo "opensearch.hosts: [\"${OPENSEARCH_URL}\"]" >> "$OSD_CONF"
+
+if [ "$UNAME" != "" ]; then
+  echo "opensearch.username: ${UNAME}" >> "$OSD_CONF"
+  echo "opensearch.password: ${PWORD}" >> "$OSD_CONF"
+  echo "opensearch.requestHeadersWhitelist: [ authorization,securityTenant ]" >> "$OSD_CONF"
+fi
+
+echo "-----> Configured OpenSearch Dashboards"
+echo
+cat "$OSD_CONF"
+echo
+
+
+echo "-----> Applying configuration"
+mv -v "$OSD_CONF" "$OSD_DIR/config/opensearch_dashboards.yml"
+
+echo "-----> Exporting Path"
+echo 'export PATH="$PATH:'${OSD_DIR##*/}'/bin"' > "$INIT_SCRIPT"
