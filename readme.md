@@ -8,7 +8,7 @@ Tested versions: 1.0.0 and 1.2.2
 
 ## Usage
 
-Or, to use as a standalone buildpack:
+To use as a standalone buildpack:
 
 ```sh
     # Create a new project with the --buildpack option.
