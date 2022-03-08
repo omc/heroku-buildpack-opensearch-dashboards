@@ -1,0 +1,27 @@
+#!/bin/bash
+
+(
+    cd ./tmp || exit
+
+    # remove the packaged version of node, use the system configured one
+    # this is needed on Mac's
+    if [[ $(uname -s) -eq 'Darwin' ]]; then
+        echo "removing packaged node"
+        rm -rf build/opensearch-dashboards-1.2.0-linux-x64/node
+    else
+        echo "using packaged node"
+    fi
+    
+
+    if grep verificationMode build/opensearch-dashboards-1.2.0-linux-x64/config/opensearch_dashboards.yml; then
+        echo 'ssl verification is already off'
+    else
+        # If running locally you need to disable SSL Verification
+        echo 'opensearch.ssl.verificationMode: none' >> build/opensearch-dashboards-1.2.0-linux-x64/config/opensearch_dashboards.yml
+    fi
+
+    (
+        cd build/opensearch-dashboards-1.2.0-linux-x64
+        bin/opensearch-dashboards
+    )
+)

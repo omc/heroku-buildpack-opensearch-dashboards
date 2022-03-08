@@ -2,6 +2,8 @@
 
 This buildpack downloads and installs OpenSearch Dashboard into a Heroku app slug.
 
+Find new versions directly from the [OpenSearch Artifacts](https://opensearch.org/artifacts)
+
 ## Compatibility
 
 Tested versions: 1.0.0 and 1.2.2
@@ -38,4 +40,44 @@ You must set the addition config vars.
 ```sh
     # Set the verison.
     heroku config:set OPENSEARCH_VERSION="1.2.2"
+```
+
+
+## Configuration Notes
+
+```
+opensearch.hosts: ["https://admin:admin@localhost:9200"]
+opensearch.username: admin
+opensearch.password: adminx
+```
+
+ssl configuration: https://opensearch.org/docs/latest/dashboards/install/tls/
+
+## Testing Notes
+
+Run an instance of OpenSearch
+
+> Note: this is running at https://admin:admin@localhost:9200
+
+```sh
+docker compose up -d
+```
+
+Now lets pack up the build pack
+
+```sh
+./scripts/build
+```
+
+Switch node to 10.24.1
+
+```sh
+nvm install 10.24.1
+nvm use 10.24.1
+```
+
+Next run the dashboard locally
+
+```sh
+./scripts/run
 ```

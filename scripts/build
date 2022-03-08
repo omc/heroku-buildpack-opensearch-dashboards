@@ -1,0 +1,11 @@
+#!/bin/bash
+
+mkdir -p ./tmp/build
+mkdir -p ./tmp/cache
+mkdir -p ./tmp/env
+
+#Set ENV VARS for TEST
+echo "1.2.0" > ./tmp/env/OPENSEARCH_VERSION
+echo "https://admin:admin@localhost:9200" > ./tmp/env/OPENSEARCH_URL
+
+bin/compile ./tmp/build ./tmp/cache ./tmp/env
