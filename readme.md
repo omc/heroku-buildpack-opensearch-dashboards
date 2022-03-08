@@ -81,3 +81,11 @@ Next run the dashboard locally
 ```sh
 ./scripts/run
 ```
+
+You should now be able to see the dashboards
+
+[http://localhost:5601](http://localhost:5601)
+
+- Username: admin
+- Password: admin
+
