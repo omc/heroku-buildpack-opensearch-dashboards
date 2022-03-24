@@ -138,7 +138,7 @@ echo
 
 
 echo "-----> Applying configuration"
-mv -v "$OSD_CONF" "$OSD_DIR/config/opensearch_dashboards.yml"
+mv -v "$OSD_CONF" "${OSD_DIR##*/}/config/opensearch_dashboards.yml"
 
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:'${OSD_DIR##*/}'/bin"' > "$INIT_SCRIPT"
