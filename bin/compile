@@ -149,7 +149,7 @@ package_name=${package_name_with_os//-linux-x64/}
 echo $package_name_with_os
 echo $package_name
 
-mv -v "${OSD_DIR}/conf/opensearch_dashboards.yml" "${BUILD_DIR}/${package_name}/config/opensearch_dashboards.yml"
+mv -v "${OSD_DIR}/config/opensearch_dashboards.yml" "${BUILD_DIR}/${package_name}/config/opensearch_dashboards.yml"
 
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:'${package_name}'/bin"' > "$INIT_SCRIPT"
