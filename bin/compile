@@ -138,6 +138,11 @@ echo
 
 
 echo "-----> Applying configuration"
+
+ls -lAh $BUILD_DIR
+ls -lAh $BUILD_DIR/opensearch-dashboards-1.2.0
+ls -lAh $BUILD_DIR/opensearch-dashboards-1.2.0-linux-x64
+
 package_name_with_os=${OSD_DIR##*/}
 package_name=${package_name_with_os//-linux-x64/}
 
