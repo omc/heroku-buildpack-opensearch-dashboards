@@ -138,8 +138,16 @@ echo
 
 
 echo "-----> Applying configuration"
-#package_name_with_os=${OSD_DIR##*/}
-#package_name=${package_name_with_os//-linux-x64/}
+
+tree $OSD_DIR || ls $OSD_DIR
+tree $BUILD_DIR || ls $BUILD_DIR
+
+package_name_with_os=${OSD_DIR##*/}
+package_name=${package_name_with_os//-linux-x64/}
+
+echo $package_name_with_os
+echo $package_name
+
 #mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name}/config/opensearch_dashboards.yml"
 mv -v $OSD_CONF $BUILD_DIR/config/opensearch_dashboards.yml
 
