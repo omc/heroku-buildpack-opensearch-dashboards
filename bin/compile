@@ -152,6 +152,12 @@ echo $package_name
 
 mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name_with_os}/config/opensearch_dashboards.yml"
 
+echo "-----> Installing plugins"
+for plugin in $(ls "${BUILD_DIR}/${package_name_with_os}/plugins"); do
+  echo "Installing ${plugin}"
+  ${BUILD_DIR}/${package_name_with_os}/bin/opensearch-dashboards-plugin install "${plugin}"
+done
+
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:opensearch-dashboards-1.2.0-linux-x64/bin"' > "$INIT_SCRIPT"
 echo "$PATH:opensearch-dashboards-1.2.0-linux-x64/bin"
