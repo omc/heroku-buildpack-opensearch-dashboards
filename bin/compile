@@ -126,8 +126,8 @@ echo "server.host: 0.0.0.0" > "$OSD_CONF"
 echo "opensearch.hosts: [\"${OPENSEARCH_URL}\"]" >> "$OSD_CONF"
 
 if [ "$UNAME" != "" ]; then
-  echo "opensearch.username: ${UNAME}" >> "$OSD_CONF"
-  echo "opensearch.password: ${PWORD}" >> "$OSD_CONF"
+  # echo "opensearch.username: ${UNAME}" >> "$OSD_CONF"
+  # echo "opensearch.password: ${PWORD}" >> "$OSD_CONF"
   echo "opensearch.requestHeadersWhitelist: [ authorization,securityTenant ]" >> "$OSD_CONF"
 fi
 
