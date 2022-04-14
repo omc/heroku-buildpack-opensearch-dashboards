@@ -140,7 +140,7 @@ echo
 echo "-----> Applying configuration"
 package_name_with_os=${OSD_DIR##*/}
 package_name=${package_name_with_os//-linux-x64/}
-mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name}/config/opensearch_dashboards.yml"
+mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name}-linux-x64/config/opensearch_dashboards.yml"
 
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:'${package_name}'/bin"' > "$INIT_SCRIPT"
