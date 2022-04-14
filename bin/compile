@@ -140,7 +140,7 @@ echo
 echo "-----> Applying configuration"
 
 ls -lAh $BUILD_DIR
-ls -lAh $BUILD_DIR/opensearch-dashboards-1.2.0
+# ls -lAh $BUILD_DIR/opensearch-dashboards-1.2.0
 ls -lAh $BUILD_DIR/opensearch-dashboards-1.2.0-linux-x64
 
 package_name_with_os=${OSD_DIR##*/}
@@ -149,7 +149,7 @@ package_name=${package_name_with_os//-linux-x64/}
 echo $package_name_with_os
 echo $package_name
 
-mv -v "${OSD_DIR}/config/opensearch_dashboards.yml" "${BUILD_DIR}/${package_name_with_os}/config/opensearch_dashboards.yml"
+mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name_with_os}/config/opensearch_dashboards.yml"
 
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:'${package_name}'/bin"' > "$INIT_SCRIPT"
