@@ -153,3 +153,5 @@ mv -v "$OSD_CONF" "${BUILD_DIR}/${package_name_with_os}/config/opensearch_dashbo
 
 echo "-----> Exporting Path"
 echo 'export PATH="$PATH:'${package_name}'/bin"' > "$INIT_SCRIPT"
+echo "PATH: ${PATH}"
+echo "$(which opensearch_dashboards)"
